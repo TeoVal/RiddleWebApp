@@ -9,5 +9,7 @@ namespace RiddleWebApp.Data
             : base(options)
         {
         }
+
+        public DbSet<RiddleWebApp.Models.Riddle> Riddle { get; set; }
     }
 }
