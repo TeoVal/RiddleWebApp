@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RiddleWebApp.Data;
+using RiddleWebApp.Dtos;
 using RiddleWebApp.Models;
+using RiddleWebApp.Services;
 
 namespace RiddleWebApp.Controllers
 {
@@ -9,14 +11,18 @@ namespace RiddleWebApp.Controllers
     {
         private readonly ApplicationDbContext context;
 
-        public RiddleController(ApplicationDbContext context)
+        private readonly IRiddleService riddleService;
+
+        public RiddleController(ApplicationDbContext context, IRiddleService riddleService)
         {
+            this.riddleService = riddleService;
             this.context = context;
         }
 
         public async Task<IActionResult> Index()
         {
-            return View(await context.Riddle.ToListAsync());
+            var riddles = riddleService.GetAllRiddles();
+            return View(riddles);
         }
 
 
@@ -27,16 +33,15 @@ namespace RiddleWebApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id, Name, Question, Answer")] Riddle riddle )
+        public async Task<IActionResult> Create([Bind("Id, Name, Question, Answer")] RiddleDto riddleDto )
         {
             if (ModelState.IsValid)
             {
-                context.Add(riddle);
-                await context.SaveChangesAsync();
+                riddleService.AddRiddle(riddleDto);
                 return RedirectToAction(nameof(Index));
             }
 
-            return View(riddle);
+            return View(riddleDto);
         }
 
         public async Task<IActionResult> Details(int? id)
